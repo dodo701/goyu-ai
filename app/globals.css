@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+:root { --ink: #11172d; --muted: #69728d; --line: #e9ecf5; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); background: #fbfcff; font-family: Arial, "Apple SD Gothic Neo", sans-serif; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+.grid-bg { background-image: linear-gradient(rgba(115, 104, 245, .04) 1px, transparent 1px), linear-gradient(90deg, rgba(115, 104, 245, .04) 1px, transparent 1px); background-size: 28px 28px; }
+.gradient-text { background: linear-gradient(100deg, #6759ef, #a454e7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.scrollbar::-webkit-scrollbar { width: 5px; } .scrollbar::-webkit-scrollbar-thumb { background: #d8dcef; border-radius: 99px; }
+.legal-copy { color: #3e4660; font-size: .95rem; line-height: 1.85; }
+.legal-copy section + section { margin-top: 2rem; }
+.legal-copy h2 { color: var(--ink); font-size: 1.1rem; font-weight: 800; margin-bottom: .65rem; }
+.legal-copy p { margin: .55rem 0; }
+.legal-copy ul { margin: .6rem 0; padding-left: 1.35rem; }
+.legal-copy li { margin: .35rem 0; }
