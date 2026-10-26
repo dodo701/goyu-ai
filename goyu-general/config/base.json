@@ -1,0 +1,19 @@
+{
+  "vocab_size": 32000,
+  "n_embd": 384,
+  "n_head": 6,
+  "n_layer": 8,
+  "block_size": 512,
+  "dropout": 0.0,
+  "rope_theta": 10000.0,
+  "batch_size": 2,
+  "grad_accum_steps": 8,
+  "learning_rate": 0.0003,
+  "min_learning_rate": 0.00003,
+  "weight_decay": 0.1,
+  "warmup_steps": 200,
+  "max_steps": 10000,
+  "eval_interval": 250,
+  "eval_steps": 20,
+  "seed": 42
+}

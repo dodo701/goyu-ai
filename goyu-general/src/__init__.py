@@ -1,0 +1,1 @@
+"""GOYU-General model package."""

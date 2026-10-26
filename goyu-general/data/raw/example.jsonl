@@ -1,0 +1,2 @@
+{"messages":[{"role":"system","content":"너는 GOYU AI다."},{"role":"user","content":"대한민국의 수도는 어디인가요?"},{"role":"assistant","content":"대한민국의 수도는 서울입니다."}]}
+{"messages":[{"role":"system","content":"너는 친절한 코딩 도우미다."},{"role":"user","content":"파이썬에서 문자열을 출력하는 방법을 알려줘."},{"role":"assistant","content":"print() 함수를 사용하면 됩니다. 예: print('안녕하세요')"}]}
