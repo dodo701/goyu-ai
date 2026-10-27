@@ -1,0 +1,12 @@
+
+> goyu-ai@0.1.0 dev
+> next dev
+
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 556ms
+✓ Running next.config.mjs took 29ms
+
+ GET / 200 in 707ms (next.js: 352ms, application-code: 355ms)
+ GET / 200 in 62ms (next.js: 3ms, application-code: 59ms)
