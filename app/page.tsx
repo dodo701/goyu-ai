@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 
 type Section = "home" | "chat" | "agent" | "web" | "work" | "proof" | "memory" | "studio" | "desktop" | "settings";
 type Conversation = { id: string; title: string; preview: string; updated: string };
@@ -92,13 +92,40 @@ function EnhancedChat({ conversations, activeId, setActiveId, addConversation, u
 
 function Prompt({ text, onClick }: { text: string; onClick: () => void }) { return <button onClick={onClick} className="rounded-2xl border border-line bg-white p-3 text-left text-sm text-ink transition hover:border-lavender hover:bg-[#faf9ff]">“{text}”<span className="float-right text-muted">↗</span></button>; }
 
+const PANEL_INFO: Record<string, [string, string, string, string]> = { agent: ["GOYU Agent", "복잡한 작업을 계획하고 단계별로 실행합니다.", "실행 대기 중", "◎"], web: ["GOYU Web", "검색, 조사, 비교를 한 곳에서 관리합니다.", "검색 연결 대기 중", "⊕"], work: ["GOYU Work", "문서와 파일을 기반으로 결과물을 만듭니다.", "파일 0개", "▣"], proof: ["GOYU Proof", "작업 결과의 성공 여부와 검증 근거를 확인합니다.", "검증 기록 없음", "✓"], memory: ["GOYU Memory", "저장된 대화와 프로젝트 문맥을 직접 관리합니다.", "저장된 기억 0개", "◈"], studio: ["GOYU Studio", "연결 가능한 도구와 권한을 관리합니다.", "도구 연결 대기 중", "⌘"], desktop: ["GOYU Desktop", "승인 기반 데스크톱 자동화를 준비합니다.", "출시 예정", "▥"], settings: ["설정", "계정, 알림, 보안과 연결 정보를 관리합니다.", "개인 설정", "⚙"] };
+
 function Panel({ section }: { section: Section }) {
-  const info: Record<string, [string, string, string, string]> = { agent: ["GOYU Agent", "복잡한 작업을 계획하고 단계별로 실행합니다.", "실행 대기 중", "◎"], web: ["GOYU Web", "검색, 조사, 비교를 한 곳에서 관리합니다.", "검색 연결 대기 중", "⊕"], work: ["GOYU Work", "문서와 파일을 기반으로 결과물을 만듭니다.", "파일 0개", "▣"], proof: ["GOYU Proof", "작업 결과의 성공 여부와 검증 근거를 확인합니다.", "검증 기록 없음", "✓"], memory: ["GOYU Memory", "저장된 대화와 프로젝트 문맥을 직접 관리합니다.", "저장된 기억 0개", "◈"], studio: ["GOYU Studio", "연결 가능한 도구와 권한을 관리합니다.", "도구 연결 대기 중", "⌘"], desktop: ["GOYU Desktop", "승인 기반 데스크톱 자동화를 준비합니다.", "출시 예정", "▥"], settings: ["설정", "계정, 알림, 보안과 연결 정보를 관리합니다.", "개인 설정", "⚙"] };
-  const [title, sub, badge, icon] = info[section];
+  const [title, sub, badge, icon] = PANEL_INFO[section];
   return <div className="min-h-full p-5 sm:p-8 lg:p-12"><div className="mx-auto max-w-5xl"><div className="flex items-start justify-between"><div><div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f0edff] text-xl text-lavender">{icon}</div><h1 className="mt-6 text-3xl font-extrabold tracking-tight">{title}</h1><p className="mt-2 text-sm text-muted">{sub}</p></div><Badge tone={section === "desktop" ? "gray" : "orange"}>{badge}</Badge></div><div className="mt-10 grid gap-4 md:grid-cols-3">{["개요", "최근 활동", "연결 설정"].map((label, index) => <div key={label} className="min-h-36 rounded-2xl border border-line bg-white p-5 shadow-soft"><p className="text-sm font-bold">{label}</p><p className="mt-6 text-xs leading-5 text-muted">{index === 0 ? "이 공간은 실제 연결 전에도 구조와 상태를 확인할 수 있습니다." : "아직 표시할 데이터가 없습니다."}</p></div>)}</div><div className="mt-8 rounded-2xl border border-dashed border-[#cfd3e4] bg-white p-8 text-center"><p className="text-sm font-bold">이 기능은 연결 후 활성화됩니다</p><p className="mt-2 text-xs text-muted">백엔드 API와 사용자 인증을 연결하면 이 화면에서 실제 데이터를 관리할 수 있습니다.</p></div></div></div>;
 }
 
 function NavItem({ item, active, setActive }: { item: typeof nav[number]; active: Section; setActive: (section: Section) => void }) { return <button onClick={() => setActive(item.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition ${active === item.id ? "bg-[#f0edff] text-lavender" : "text-muted hover:bg-[#f7f8fc] hover:text-ink"}`}><span className="w-5 text-center text-base">{item.icon}</span>{item.label}{item.id === "desktop" && <Badge tone="gray">Soon</Badge>}</button>; }
+
+function DebouncedSearch({ onSearch }: { onSearch: (query: string) => void }) {
+  const [localQuery, setLocalQuery] = useState("");
+  const timeoutRef = useRef<NodeJS.Timeout>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalQuery(value);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      onSearch(value);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  return <input value={localQuery} onChange={handleChange} placeholder="대화 검색" className="min-w-0 flex-1 bg-transparent outline-none" />;
+}
 
 export default function Page() {
   const [active, setActive] = useState<Section>("home");
@@ -106,7 +133,10 @@ export default function Page() {
   const [query, setQuery] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
   const current = nav.find(item => item.id === active);
-  const filtered = useMemo(() => conversations.filter(item => item.title.toLowerCase().includes(query.toLowerCase()) || item.preview.toLowerCase().includes(query.toLowerCase())), [conversations, query]);
+  const filtered = useMemo(() => {
+    const lowerQuery = query.toLowerCase();
+    return conversations.filter(item => item.title.toLowerCase().includes(lowerQuery) || item.preview.toLowerCase().includes(lowerQuery));
+  }, [conversations, query]);
 
   useEffect(() => { const saved = window.localStorage.getItem("goyu-demo-conversations"); if (saved) { try { setConversations(JSON.parse(saved)); } catch { /* ignore invalid local demo data */ } } }, []);
   useEffect(() => { window.localStorage.setItem("goyu-demo-conversations", JSON.stringify(conversations)); }, [conversations]);
@@ -115,7 +145,7 @@ export default function Page() {
   const go = (section: Section) => setActive(section);
 
   return <main className="flex h-screen min-h-0 overflow-hidden bg-[#fbfcff]">
-    <aside className="hidden w-[270px] shrink-0 border-r border-line bg-[#f8f9fc] md:flex md:flex-col"><div className="flex items-center gap-3 px-5 py-5"><div className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-sm font-bold text-white">G</div><div><p className="font-extrabold tracking-tight">GOYU AI</p><p className="text-[10px] font-bold tracking-widest text-lavender">WORKSPACE</p></div></div><button onClick={newConversation} className="mx-4 flex items-center justify-center gap-2 rounded-xl border border-line bg-white py-3 text-sm font-bold text-ink shadow-sm transition hover:border-lavender hover:text-lavender">＋ 새 대화</button><div className="px-4 pt-4"><label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-xs text-muted"><span>⌕</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="대화 검색" className="min-w-0 flex-1 bg-transparent outline-none" /></label></div><div className="scrollbar flex-1 overflow-auto px-3 pt-5"><p className="px-3 text-[10px] font-bold tracking-[.18em] text-[#a1a8bd]">최근 대화</p><div className="mt-2 space-y-1">{filtered.map(item => <button key={item.id} onClick={() => { setActiveId(item.id); setActive("chat"); }} className={`w-full rounded-xl px-3 py-2 text-left transition ${active === "chat" && activeId === item.id ? "bg-[#eceaff]" : "hover:bg-white"}`}><p className="truncate text-xs font-bold text-ink">{item.title}</p><p className="mt-1 truncate text-[11px] text-muted">{item.preview}</p></button>)}{filtered.length === 0 && <p className="px-3 py-3 text-xs text-muted">검색 결과가 없습니다.</p>}</div><div className="mt-6 space-y-5">{["WORKSPACE", "SYSTEM"].map(group => <div key={group}><p className="px-3 text-[10px] font-bold tracking-[.18em] text-[#a1a8bd]">{group}</p><div className="mt-2 space-y-1">{nav.filter(item => item.group === group).map(item => <NavItem key={item.id} item={item} active={active} setActive={setActive} />)}</div></div>)}</div></div><div className="border-t border-line p-4"><Link href="/auth" className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-white"><div className="grid h-8 w-8 place-items-center rounded-full bg-[#dcd8ff] text-xs font-bold text-lavender">Y</div><div className="min-w-0"><p className="truncate text-xs font-bold">내 워크스페이스</p><p className="text-[10px] text-muted">로그인 / 개인 플랜</p></div><span className="ml-auto text-muted">›</span></Link><div className="mt-2 flex gap-3 px-2 text-[10px] text-muted"><Link href="/legal/terms" className="hover:text-lavender">이용약관</Link><Link href="/legal/privacy" className="hover:text-lavender">개인정보</Link></div></div></aside>
+    <aside className="hidden w-[270px] shrink-0 border-r border-line bg-[#f8f9fc] md:flex md:flex-col"><div className="flex items-center gap-3 px-5 py-5"><div className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-sm font-bold text-white">G</div><div><p className="font-extrabold tracking-tight">GOYU AI</p><p className="text-[10px] font-bold tracking-widest text-lavender">WORKSPACE</p></div></div><button onClick={newConversation} className="mx-4 flex items-center justify-center gap-2 rounded-xl border border-line bg-white py-3 text-sm font-bold text-ink shadow-sm transition hover:border-lavender hover:text-lavender">＋ 새 대화</button><div className="px-4 pt-4"><label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-xs text-muted"><span>⌕</span><DebouncedSearch onSearch={setQuery} /></label></div><div className="scrollbar flex-1 overflow-auto px-3 pt-5"><p className="px-3 text-[10px] font-bold tracking-[.18em] text-[#a1a8bd]">최근 대화</p><div className="mt-2 space-y-1">{filtered.map(item => <button key={item.id} onClick={() => { setActiveId(item.id); setActive("chat"); }} className={`w-full rounded-xl px-3 py-2 text-left transition ${active === "chat" && activeId === item.id ? "bg-[#eceaff]" : "hover:bg-white"}`}><p className="truncate text-xs font-bold text-ink">{item.title}</p><p className="mt-1 truncate text-[11px] text-muted">{item.preview}</p></button>)}{filtered.length === 0 && <p className="px-3 py-3 text-xs text-muted">검색 결과가 없습니다.</p>}</div><div className="mt-6 space-y-5">{["WORKSPACE", "SYSTEM"].map(group => <div key={group}><p className="px-3 text-[10px] font-bold tracking-[.18em] text-[#a1a8bd]">{group}</p><div className="mt-2 space-y-1">{nav.filter(item => item.group === group).map(item => <NavItem key={item.id} item={item} active={active} setActive={setActive} />)}</div></div>)}</div></div><div className="border-t border-line p-4"><Link href="/auth" className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-white"><div className="grid h-8 w-8 place-items-center rounded-full bg-[#dcd8ff] text-xs font-bold text-lavender">Y</div><div className="min-w-0"><p className="truncate text-xs font-bold">내 워크스페이스</p><p className="text-[10px] text-muted">로그인 / 개인 플랜</p></div><span className="ml-auto text-muted">›</span></Link><div className="mt-2 flex gap-3 px-2 text-[10px] text-muted"><Link href="/legal/terms" className="hover:text-lavender">이용약관</Link><Link href="/legal/privacy" className="hover:text-lavender">개인정보</Link></div></div></aside>
     <section className="flex h-screen min-h-0 min-w-0 flex-1 flex-col overflow-hidden"><header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-white px-4 sm:px-7"><div className="flex items-center gap-3"><button onClick={() => setActive("home")} className="font-extrabold tracking-tight md:hidden">GOYU <span className="text-lavender">AI</span></button><div className="hidden items-center gap-2 text-sm text-muted md:flex"><span>Workspace</span><span>/</span><span className="font-bold text-ink">{current?.label}</span></div></div><div className="flex items-center gap-2"><IconButton label="검색">⌕</IconButton><IconButton label="도움말">?</IconButton><Link href="/auth" className="ml-1 grid h-9 w-9 place-items-center rounded-full bg-[#dcd8ff] text-xs font-bold text-lavender">Y</Link></div></header><div className={`min-h-0 flex-1 ${active === "chat" ? "overflow-hidden" : "overflow-auto"}`}>{active === "home" ? <Home go={go} /> : active === "chat" ? <EnhancedChat conversations={conversations} activeId={activeId} setActiveId={setActiveId} addConversation={newConversation} updateConversation={updateConversation} /> : <Panel section={active} />}</div><nav className="flex shrink-0 overflow-x-auto border-t border-line bg-white px-2 py-2 md:hidden">{nav.slice(0, 6).map(item => <button key={item.id} onClick={() => setActive(item.id)} className={`min-w-16 flex-1 rounded-xl px-2 py-2 text-center text-[10px] font-bold ${active === item.id ? "bg-[#f0edff] text-lavender" : "text-muted"}`}><span className="block text-lg">{item.icon}</span>{item.label}</button>)}</nav></section>
   </main>;
 }
