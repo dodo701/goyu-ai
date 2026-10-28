@@ -1,0 +1,4 @@
+## 2024-05-18 - Missing Security Headers in Custom Cloudflare Pages Worker
+**Vulnerability:** The application was vulnerable to Clickjacking, lack of HSTS enforcement, and MIME-sniffing due to the Next.js frontend using a custom Cloudflare Pages worker script (`public/_worker.js`) that returned responses (e.g., `Response.json()`) without standard security headers.
+**Learning:** Cloudflare Pages does not inject default security headers when returning custom responses directly from `public/_worker.js`. Standard security headers must be explicitly appended to the Response object.
+**Prevention:** Always ensure that when returning responses directly from Cloudflare Pages worker scripts, security headers such as `X-Frame-Options`, `Strict-Transport-Security`, and `X-Content-Type-Options` are explicitly added to the Response object before returning it.
