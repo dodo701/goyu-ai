@@ -1,0 +1,3 @@
+## 2024-03-21 - Added native title attributes to icon-only buttons
+**Learning:** Icon-only buttons using generic text characters (like ✦, ＋, ↗, ⌕) need native `title` attributes for sighted users in addition to standard `aria-label` attributes for accessibility.
+**Action:** When creating new icon-only buttons using text characters or updating existing ones, always include both `aria-label` and `title` attributes with descriptive text to ensure they are accessible to both screen readers and sighted users.
